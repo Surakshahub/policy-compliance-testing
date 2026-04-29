@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Policy Compliance System</title>
+
+<style>
+body {
+    font-family: Arial;
+    background: #f5f7fa;
+}
+
+.container {
+    width: 70%;
+    margin: auto;
+    margin-top: 20px;
+}
+
+.card {
+    background: white;
+    padding: 15px;
+    margin-top: 15px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+input, select {
+    width: 100%;
+    padding: 8px;
+    margin-top: 8px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
+button {
+    margin-top: 10px;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    width: auto;
+}
+
+.save { background: green; color: white; }
+.load { background: blue; color: white; }
+.search { background: orange; color: white; }
+.delete { background: red; color: white; }
+.edit { background: gray; color: white; }
+
+.badge {
+    padding: 4px 10px;
+    border-radius: 5px;
+    color: white;
+    font-size: 12px;
+}
+
+.COMPLIANT { background: green; }
+.NON_COMPLIANT { background: red; }
+.PENDING { background: orange; }
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h2 style="text-align:center;">Policy Compliance System</h2>
+
+<!-- FORM -->
+<div class="card">
+    <input id="name" placeholder="Policy Name">
+    <input id="input" placeholder="Input">
+    
+    <select id="status">
+        <option>COMPLIANT</option>
+        <option>NON_COMPLIANT</option>
+        <option>PENDING</option>
+    </select>
+
+    <button class="save" onclick="savePolicy()">Save Policy</button>
+    <button class="load" onclick="loadPolicies()">Load Policies</button>
+</div>
+
+<!-- SEARCH -->
+<div class="card">
+    <h4>Search by Status</h4>
+    <input id="searchStatus" placeholder="Enter Status">
+    <button class="search" onclick="searchPolicy()">Search</button>
+</div>
+
+<!-- OUTPUT -->
+<div class="card">
+    <h4 id="total">Total Policies: 0</h4>
+    <div id="result"></div>
+</div>
+
+</div>
+
+<script>
+
+let currentEditId = null;
+
+// SAVE / UPDATE
+function savePolicy() {
+
+    const data = {
+        name: document.getElementById("name").value,
+        input: document.getElementById("input").value,
+        status: document.getElementById("status").value
+    };
+
+    if(data.name === "" || data.input === ""){
+        alert("Fill all fields");
+        return;
+    }
+
+    let url = "http://localhost:8080/save";
+    let method = "POST";
+
+    if(currentEditId){
+        url = "http://localhost:8080/update/" + currentEditId;
+        method = "PUT";
+    }
+
+    fetch(url, {
+        method: method,
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify(data)
+    })
+    .then(() => {
+        alert("Saved Successfully");
+        currentEditId = null;
+        loadPolicies();
+    });
+}
+
+// LOAD
+function loadPolicies(){
+    fetch("http://localhost:8080/getAll")
+    .then(res => res.json())
+    .then(data => display(data));
+}
+
+// DELETE
+function deletePolicy(id){
+    fetch("http://localhost:8080/delete/" + id, {method:"DELETE"})
+    .then(() => loadPolicies());
+}
+
+// SEARCH
+function searchPolicy(){
+    let status = document.getElementById("searchStatus").value;
+
+    fetch("http://localhost:8080/search/" + status)
+    .then(res => res.json())
+    .then(data => display(data));
+}
+
+// EDIT
+function editPolicy(id, name, input, status){
+    document.getElementById("name").value = name;
+    document.getElementById("input").value = input;
+    document.getElementById("status").value = status;
+
+    currentEditId = id;
+}
+
+// DISPLAY
+function display(data){
+
+    document.getElementById("total").innerText = "Total Policies: " + data.length;
+
+    let output = "";
+
+    data.forEach(p => {
+        output += `
+        <div class="card">
+            <h4>${p.name}</h4>
+            <p><b>Input:</b> ${p.input}</p>
+            <span class="badge ${p.status}">${p.status}</span><br><br>
+
+            <button class="edit" onclick="editPolicy(${p.id}, '${p.name}', '${p.input}', '${p.status}')">Edit</button>
+            <button class="delete" onclick="deletePolicy(${p.id})">Delete</button>
+        </div>
+        `;
+    });
+
+    document.getElementById("result").innerHTML = output;
+}
+
+</script>
+
+</body>
+</html>
