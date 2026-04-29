@@ -48,53 +48,29 @@ The system ensures proper validation and smooth interaction between frontend and
 - search by status implemented
 - UI improvements for better user experience
 
-### Day 7
+### Day 7 - Enhancements
+
 - Implemented Update (Edit) functionality
 - Completed full CRUD operations (Create, Read, Update, Delete)
 - Added Search by Status feature
 - Improved UI using dropdown for status selection
 - Form validation added (all fields required)
-- Automatic form reset after saving/updatings
+- Automatic form reset after saving/updating
 
-##  Day 8 - Enhancements
+### Day 7 - Enhancements
 
-- Successfully implemented Edit and Delete functionality
-- Displayed all policies dynamically on UI
-- Added total policies count display
-- Improved UI layout for better readability
-- Fixed loading issue after saving policy
-- Integrated frontend with backend APIs properly
+- Implemented Update (Edit) functionality
+- Completed full CRUD operations (Create, Read, Update, Delete)
+- Added Search by Status feature
+- Improved UI using dropdown for status selection
+- Form validation added (all fields required)
+- Automatic form reset after saving/updating
+## Screenshot
 
-## Day 9 - Enhancements
+### Day 6 UI Output
+![UI](screenshots/day%206(main).png)
 
-- Implemented Search by Status functionality (COMPLIANT, NON_COMPLIANT, PENDING)
-- Fixed button size issue (removed full-width buttons)
-- Improved UI design for better alignment and spacing
-- Displayed status using colored badges (Green, Red, Orange)
-- Ensured proper integration of frontend with backend search API
-- Verified complete CRUD operations (Save, Load, Search, Delete)
-- Cleaned up layout for better user experience
-
-## Day 10 - Enhancements
-
-- Implemented Edit functionality for updating existing policies  
-- Allowed users to modify policy name, input, and status  
-- Integrated PUT API for updating data in backend  
-- Fixed duplicate entry issue while editing  
-- Improved UI for Edit and Delete buttons  
-- Ensured smooth working of all CRUD operations (Save, Load, Search, Update, Delete)  
-- Tested complete frontend and backend integration
-
-### screenshots
-
-![UI](screenshots/day6.png)
-![UI](screenshots/day6main.png)
-![UI](screenshots/day7_1.png)
-![UI](screenshots/day7_2.png)
-![UI](screenshots/day8.png)
-![UI](screenshots/day9_1.png)
-![Search](screenshots/day9_2.png)
-![UI](screenshots/day10_1.png)
-![UI](screenshots/day10_2.png)
-
+### Day 7 UI Output
+![UI](screenshots/DAY%207_1.png)
+![UI](screenshots/DAY%207_2.png)
 
