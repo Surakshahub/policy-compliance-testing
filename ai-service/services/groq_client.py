@@ -12,6 +12,15 @@ class GroqClient:
     BASE_URL = "https://api.groq.com/openai/v1/chat/completions"
 
     @staticmethod
+    def fallback_response():
+
+        return {
+            "success": True,
+            "is_fallback": True,
+            "content": "Fallback response generated because AI service is temporarily unavailable."
+        }
+
+    @staticmethod
     def generate(prompt, user_input):
 
         headers = {
@@ -31,8 +40,8 @@ class GroqClient:
                     "content": user_input
                 }
             ],
-            "temperature": 0.3,
-            "max_tokens": 300
+            "temperature": 0.2,
+            "max_tokens": 200
         }
 
         try:
@@ -41,16 +50,12 @@ class GroqClient:
                 GroqClient.BASE_URL,
                 json=payload,
                 headers=headers,
-                timeout=30
+                timeout=10
             )
 
             if response.status_code != 200:
 
-                return {
-                    "success": False,
-                    "is_fallback": True,
-                    "content": "AI service temporarily unavailable."
-                }
+                return GroqClient.fallback_response()
 
             data = response.json()
 
@@ -59,15 +64,11 @@ class GroqClient:
             return {
                 "success": True,
                 "is_fallback": False,
-                "content": ai_response
+                "content": ai_response.strip()
             }
 
         except Exception as e:
 
             print("Groq Error:", e)
 
-            return {
-                "success": False,
-                "is_fallback": True,
-                "content": "Fallback response generated due to AI failure."
-            }
+            return GroqClient.fallback_response()

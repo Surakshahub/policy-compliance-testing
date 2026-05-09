@@ -40,6 +40,7 @@ def health():
         "status": "UP",
         "service": "Policy Compliance Testing AI",
         "model": "llama-3.3-70b-versatile",
+        "cache": "Redis",
         "uptime_seconds": uptime
     }
 
