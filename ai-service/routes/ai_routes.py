@@ -1,12 +1,11 @@
 from flask import Blueprint, request, jsonify
 from datetime import datetime
 import json
+import time
 
 from services.groq_client import GroqClient
 from services.prompt_loader import load_prompt
-from flask import Blueprint, request, jsonify
-from datetime import datetime
-import json
+from services.cache_service import CacheService
 
 ai_bp = Blueprint("ai_bp", __name__)
 
@@ -26,35 +25,35 @@ def describe():
 
         text = data.get("text")
 
-        if not text:
-            return jsonify({
-                "success": False,
-                "error": "text field is required"
-            }), 400
+        cached = CacheService.get(text)
 
-        if len(text.strip()) < 5:
-            return jsonify({
-                "success": False,
-                "error": "Input too short"
-            }), 400
+        if cached:
+
+            cached["cached"] = True
+
+            return jsonify(cached), 200
 
         prompt = load_prompt("prompts/describe_prompt.txt")
 
-        if not prompt:
-            return jsonify({
-                "success": False,
-                "error": "Prompt loading failed"
-            }), 500
+        start_time = time.time()
 
         result = GroqClient.generate(prompt, text)
 
-        return jsonify({
+        response_time = round(time.time() - start_time, 2)
+
+        response_data = {
             "success": True,
             "generated_at": datetime.now().isoformat(),
             "is_fallback": result["is_fallback"],
+            "cached": False,
+            "response_time_seconds": response_time,
             "input": text,
             "description": result["content"]
-        }), 200
+        }
+
+        CacheService.set(text, response_data)
+
+        return jsonify(response_data), 200
 
     except Exception as e:
 
@@ -71,29 +70,23 @@ def recommend():
 
         data = request.get_json()
 
-        if not data:
-            return jsonify({
-                "success": False,
-                "error": "Request body is required"
-            }), 400
-
         text = data.get("text")
 
-        if not text:
-            return jsonify({
-                "success": False,
-                "error": "text field is required"
-            }), 400
+        cached = CacheService.get(text)
+
+        if cached:
+
+            cached["cached"] = True
+
+            return jsonify(cached), 200
 
         prompt = load_prompt("prompts/recommend_prompt.txt")
 
-        if not prompt:
-            return jsonify({
-                "success": False,
-                "error": "Prompt loading failed"
-            }), 500
+        start_time = time.time()
 
         result = GroqClient.generate(prompt, text)
+
+        response_time = round(time.time() - start_time, 2)
 
         try:
             recommendations = json.loads(result["content"])
@@ -107,13 +100,19 @@ def recommend():
                 }
             ]
 
-        return jsonify({
+        response_data = {
             "success": True,
             "generated_at": datetime.now().isoformat(),
             "is_fallback": result["is_fallback"],
+            "cached": False,
+            "response_time_seconds": response_time,
             "input": text,
             "recommendations": recommendations
-        }), 200
+        }
+
+        CacheService.set(text, response_data)
+
+        return jsonify(response_data), 200
 
     except Exception as e:
 
@@ -121,7 +120,7 @@ def recommend():
             "success": False,
             "error": str(e)
         }), 500
-    
+
 
 @ai_bp.route("/generate-report", methods=["POST"])
 def generate_report():
@@ -130,29 +129,23 @@ def generate_report():
 
         data = request.get_json()
 
-        if not data:
-            return jsonify({
-                "success": False,
-                "error": "Request body is required"
-            }), 400
-
         text = data.get("text")
 
-        if not text:
-            return jsonify({
-                "success": False,
-                "error": "text field is required"
-            }), 400
+        cached = CacheService.get(text)
+
+        if cached:
+
+            cached["cached"] = True
+
+            return jsonify(cached), 200
 
         prompt = load_prompt("prompts/report_prompt.txt")
 
-        if not prompt:
-            return jsonify({
-                "success": False,
-                "error": "Prompt loading failed"
-            }), 500
+        start_time = time.time()
 
         result = GroqClient.generate(prompt, text)
+
+        response_time = round(time.time() - start_time, 2)
 
         try:
             report = json.loads(result["content"])
@@ -166,13 +159,19 @@ def generate_report():
                 "recommendations": []
             }
 
-        return jsonify({
+        response_data = {
             "success": True,
             "generated_at": datetime.now().isoformat(),
             "is_fallback": result["is_fallback"],
+            "cached": False,
+            "response_time_seconds": response_time,
             "input": text,
             "report": report
-        }), 200
+        }
+
+        CacheService.set(text, response_data)
+
+        return jsonify(response_data), 200
 
     except Exception as e:
 
