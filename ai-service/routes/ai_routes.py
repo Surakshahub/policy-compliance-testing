@@ -179,3 +179,22 @@ def generate_report():
             "success": False,
             "error": str(e)
         }), 500
+
+def validate_input(text):
+
+    blocked_patterns = [
+        "<script>",
+        "</script>",
+        "DROP TABLE",
+        "SELECT *",
+        "--",
+        ";"
+    ]
+
+    for pattern in blocked_patterns:
+
+        if pattern.lower() in text.lower():
+
+            return False
+
+    return True
