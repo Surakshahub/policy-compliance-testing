@@ -1,8 +1,10 @@
 from flask import Flask
 from flask_cors import CORS
 from flask_talisman import Talisman
+from flasgger import Swagger
 from routes.ai_routes import ai_bp
 from dotenv import load_dotenv
+from services.metrics_service import MetricsService
 import time
 
 load_dotenv()
@@ -15,6 +17,8 @@ Talisman(
     app,
     content_security_policy=None
 )
+
+swagger = Swagger(app)
 
 app.config["PROPAGATE_EXCEPTIONS"] = False
 
@@ -42,6 +46,15 @@ def health():
         "model": "llama-3.3-70b-versatile",
         "cache": "Redis",
         "uptime_seconds": uptime
+    }
+
+
+@app.route("/metrics")
+def metrics():
+
+    return {
+        "status": "UP",
+        "metrics": MetricsService.get_metrics()
     }
 
 
