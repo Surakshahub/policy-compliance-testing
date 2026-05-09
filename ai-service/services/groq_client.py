@@ -6,6 +6,7 @@ load_dotenv()
 
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
+
 class GroqClient:
 
     BASE_URL = "https://api.groq.com/openai/v1/chat/completions"
@@ -31,10 +32,11 @@ class GroqClient:
                 }
             ],
             "temperature": 0.3,
-            "max_tokens": 500
+            "max_tokens": 300
         }
 
         try:
+
             response = requests.post(
                 GroqClient.BASE_URL,
                 json=payload,
@@ -42,11 +44,26 @@ class GroqClient:
                 timeout=30
             )
 
+            if response.status_code != 200:
+                return {
+                    "success": False,
+                    "error": "Groq API failed"
+                }
+
             data = response.json()
 
-            return data["choices"][0]["message"]["content"]
+            ai_response = data["choices"][0]["message"]["content"]
+
+            return {
+                "success": True,
+                "content": ai_response
+            }
 
         except Exception as e:
+
             print("Groq Error:", e)
 
-            return "AI generation failed"
+            return {
+                "success": False,
+                "error": str(e)
+            }
