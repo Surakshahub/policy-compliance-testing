@@ -4,6 +4,9 @@ import json
 
 from services.groq_client import GroqClient
 from services.prompt_loader import load_prompt
+from flask import Blueprint, request, jsonify
+from datetime import datetime
+import json
 
 ai_bp = Blueprint("ai_bp", __name__)
 
@@ -110,6 +113,65 @@ def recommend():
             "is_fallback": result["is_fallback"],
             "input": text,
             "recommendations": recommendations
+        }), 200
+
+    except Exception as e:
+
+        return jsonify({
+            "success": False,
+            "error": str(e)
+        }), 500
+    
+
+@ai_bp.route("/generate-report", methods=["POST"])
+def generate_report():
+
+    try:
+
+        data = request.get_json()
+
+        if not data:
+            return jsonify({
+                "success": False,
+                "error": "Request body is required"
+            }), 400
+
+        text = data.get("text")
+
+        if not text:
+            return jsonify({
+                "success": False,
+                "error": "text field is required"
+            }), 400
+
+        prompt = load_prompt("prompts/report_prompt.txt")
+
+        if not prompt:
+            return jsonify({
+                "success": False,
+                "error": "Prompt loading failed"
+            }), 500
+
+        result = GroqClient.generate(prompt, text)
+
+        try:
+            report = json.loads(result["content"])
+
+        except:
+            report = {
+                "title": "Fallback Report",
+                "summary": result["content"],
+                "overview": "AI fallback response generated.",
+                "key_items": [],
+                "recommendations": []
+            }
+
+        return jsonify({
+            "success": True,
+            "generated_at": datetime.now().isoformat(),
+            "is_fallback": result["is_fallback"],
+            "input": text,
+            "report": report
         }), 200
 
     except Exception as e:
