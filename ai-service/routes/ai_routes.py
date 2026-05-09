@@ -68,3 +68,57 @@ def describe():
             "success": False,
             "error": str(e)
         }), 500
+    
+@ai_bp.route("/recommend", methods=["POST"])
+def recommend():
+
+    try:
+
+        data = request.get_json()
+
+        # Validate request
+        if not data:
+            return jsonify({
+                "success": False,
+                "error": "Request body is required"
+            }), 400
+
+        text = data.get("text")
+
+        if not text:
+            return jsonify({
+                "success": False,
+                "error": "text field is required"
+            }), 400
+
+        # Load prompt
+        prompt = load_prompt("prompts/recommend_prompt.txt")
+
+        if not prompt:
+            return jsonify({
+                "success": False,
+                "error": "Prompt loading failed"
+            }), 500
+
+        # Generate AI response
+        result = GroqClient.generate(prompt, text)
+
+        if not result["success"]:
+            return jsonify({
+                "success": False,
+                "error": result["error"]
+            }), 500
+
+        return jsonify({
+            "success": True,
+            "generated_at": datetime.now().isoformat(),
+            "input": text,
+            "recommendations": result["content"]
+        }), 200
+
+    except Exception as e:
+
+        return jsonify({
+            "success": False,
+            "error": str(e)
+        }), 500
