@@ -1,27 +1,22 @@
 from flask import Blueprint, request, jsonify
+from services.groq_client import GroqClient
+from services.prompt_loader import load_prompt
+from datetime import datetime
 
 ai_bp = Blueprint("ai_bp", __name__)
 
 @ai_bp.route("/describe", methods=["POST"])
 def describe():
+
     data = request.json
+    text = data.get("text")
+
+    prompt = load_prompt("prompts/describe_prompt.txt")
+
+    result = GroqClient.generate(prompt, text)
 
     return jsonify({
         "success": True,
-        "message": "Describe endpoint working",
-        "data": data
-    })
-
-@ai_bp.route("/recommend", methods=["POST"])
-def recommend():
-    return jsonify({
-        "success": True,
-        "message": "Recommend endpoint working"
-    })
-
-@ai_bp.route("/generate-report", methods=["POST"])
-def generate_report():
-    return jsonify({
-        "success": True,
-        "message": "Generate report endpoint working"
+        "generated_at": datetime.now().isoformat(),
+        "response": result
     })
