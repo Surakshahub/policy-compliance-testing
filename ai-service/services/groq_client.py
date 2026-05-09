@@ -45,9 +45,11 @@ class GroqClient:
             )
 
             if response.status_code != 200:
+
                 return {
                     "success": False,
-                    "error": "Groq API failed"
+                    "is_fallback": True,
+                    "content": "AI service temporarily unavailable."
                 }
 
             data = response.json()
@@ -56,6 +58,7 @@ class GroqClient:
 
             return {
                 "success": True,
+                "is_fallback": False,
                 "content": ai_response
             }
 
@@ -65,5 +68,6 @@ class GroqClient:
 
             return {
                 "success": False,
-                "error": str(e)
+                "is_fallback": True,
+                "content": "Fallback response generated due to AI failure."
             }

@@ -18,8 +18,11 @@ def home():
 
 @app.route("/health")
 def health():
+
     return {
-        "status": "UP"
+        "status": "UP",
+        "service": "Policy Compliance Testing AI",
+        "model": "llama-3.3-70b-versatile"
     }
 
 if __name__ == "__main__":

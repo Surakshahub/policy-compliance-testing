@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 from datetime import datetime
+import json
 
 from services.groq_client import GroqClient
 from services.prompt_loader import load_prompt
@@ -14,7 +15,6 @@ def describe():
 
         data = request.get_json()
 
-        # Validate request body
         if not data:
             return jsonify({
                 "success": False,
@@ -23,7 +23,6 @@ def describe():
 
         text = data.get("text")
 
-        # Validate text field
         if not text:
             return jsonify({
                 "success": False,
@@ -36,7 +35,6 @@ def describe():
                 "error": "Input too short"
             }), 400
 
-        # Load prompt
         prompt = load_prompt("prompts/describe_prompt.txt")
 
         if not prompt:
@@ -45,19 +43,12 @@ def describe():
                 "error": "Prompt loading failed"
             }), 500
 
-        # Generate AI response
         result = GroqClient.generate(prompt, text)
 
-        if not result["success"]:
-            return jsonify({
-                "success": False,
-                "error": result["error"]
-            }), 500
-
-        # Final response
         return jsonify({
             "success": True,
             "generated_at": datetime.now().isoformat(),
+            "is_fallback": result["is_fallback"],
             "input": text,
             "description": result["content"]
         }), 200
@@ -68,7 +59,8 @@ def describe():
             "success": False,
             "error": str(e)
         }), 500
-    
+
+
 @ai_bp.route("/recommend", methods=["POST"])
 def recommend():
 
@@ -76,7 +68,6 @@ def recommend():
 
         data = request.get_json()
 
-        # Validate request
         if not data:
             return jsonify({
                 "success": False,
@@ -91,7 +82,6 @@ def recommend():
                 "error": "text field is required"
             }), 400
 
-        # Load prompt
         prompt = load_prompt("prompts/recommend_prompt.txt")
 
         if not prompt:
@@ -100,20 +90,26 @@ def recommend():
                 "error": "Prompt loading failed"
             }), 500
 
-        # Generate AI response
         result = GroqClient.generate(prompt, text)
 
-        if not result["success"]:
-            return jsonify({
-                "success": False,
-                "error": result["error"]
-            }), 500
+        try:
+            recommendations = json.loads(result["content"])
+
+        except:
+            recommendations = [
+                {
+                    "action_type": "Fallback",
+                    "description": result["content"],
+                    "priority": "LOW"
+                }
+            ]
 
         return jsonify({
             "success": True,
             "generated_at": datetime.now().isoformat(),
+            "is_fallback": result["is_fallback"],
             "input": text,
-            "recommendations": result["content"]
+            "recommendations": recommendations
         }), 200
 
     except Exception as e:
