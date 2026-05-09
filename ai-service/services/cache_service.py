@@ -5,11 +5,15 @@ import json
 
 class CacheService:
 
-    redis_client = redis.Redis(
-        host="localhost",
-        port=6379,
-        decode_responses=True
-    )
+  import os
+
+REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
+
+redis_client = redis.Redis(
+    host=REDIS_HOST,
+    port=6379,
+    decode_responses=True
+)
 
     TTL = 900
 
