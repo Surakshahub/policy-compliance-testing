@@ -6,6 +6,8 @@ import time
 from services.groq_client import GroqClient
 from services.prompt_loader import load_prompt
 from services.cache_service import CacheService
+from services.metrics_service import MetricsService
+from services.logger_service import LoggerService
 
 ai_bp = Blueprint("ai_bp", __name__)
 
